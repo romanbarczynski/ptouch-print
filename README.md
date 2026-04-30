@@ -31,6 +31,54 @@ https://mockmoon-cybernetics.ch/computer/p-touch2430pc/
     ./configure --prefix=/usr
     make
 
+### Macos compilation:
+
+    brew install libusb cmake gd cloc automake gettext
+
+    export LDFLAGS="-L$(brew --prefix)/lib -L$(brew --prefix gettext)/lib"
+    export CPPFLAGS="-I$(brew --prefix)/include -I$(brew --prefix gettext)/include"
+    export LIBS="-lintl"
+
+    ./autogen.sh
+    ./configure --prefix=/usr/local
+    make
+
+### Autocut & Chain printing
+
+Tested on PT-H500 and based on [Brother Software Developer's Manual for PT-H500/P700/E500][1]
+
+[1]: https://download.brother.com/welcome/docp000771/cv_pth500p700e500_eng_raster_111.pdf
+
+Due to how these printers are built cutting blade is ~21mm apart from print head.
+So when you only print 1 label printer by default **feed & cut** label,
+therefore next label will have ~21mm empty space before content.
+
+PT-H500, P700 and E500 have additional modes that allow to better control this behaviour:
+
+- Automatic cutting of "lead": printer starts printing,
+  pauses ~21mm deep to **cut** empty part, print rest,
+- Chain printing: by default after every job printer feeds & cut,
+  this produces waste (especially on short labels).
+  This mode is useful when you printing several labels, but dont want to manually
+  separate each of them (after printing long strip separated by pads).
+
+You can control these modes with options:
+
+- `--autocut` - will enable automatic cut of "lead" empty space,
+- `--chain` - will stop **feed & cut** default behaviour, so that next label
+   autocut will separate consecutive labels just in right place
+
+#### Example:
+
+When you're printing many labels you can it this way:
+
+
+    ptouch-print --text "1" --autocut --chain
+    ...
+    ptouch-print --text "98" --autocut --chain
+    ptouch-print --text "99" --autocut
+
+(remove `--chain` on last one so it is feed & cut as usual, but leave `--autocut` so previous is separated)
 
 ### PT-P700:
 

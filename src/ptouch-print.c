@@ -54,6 +54,8 @@ char *save_png=NULL;
 int verbose=0;
 int fontsize=0;
 bool debug=false;
+bool chain_print=false;
+bool auto_cut=false;
 
 /* --------------------------------------------------------------------
    -------------------------------------------------------------------- */
@@ -97,6 +99,18 @@ int print_img(ptouch_dev ptdev, gdImage *im)
 		printf(_("ptouch_rasterstart() failed\n"));
 		return -1;
 	}
+  if (auto_cut) {
+    if (ptouch_auto_cut(ptdev) != 0) {
+      printf(_("ptouch_auto_cut() failed\n"));
+      return -1;
+    }
+  }
+  if (chain_print) {
+    if (ptouch_chain(ptdev) != 0) {
+      printf(_("ptouch_chain() failed\n"));
+      return -1;
+    }
+  }
 	for (k=0; k<gdImageSX(im); k+=1) {
 		memset(rasterline, 0, sizeof(rasterline));
 		for (i=0; i<gdImageSY(im); i+=1) {
@@ -371,6 +385,8 @@ void usage(char *progname)
 	printf("\t--cutmark\t\tPrint a mark where the tape should be cut\n");
 	printf("\t--fontsize\t\tManually set fontsize\n");
 	printf("\t--pad <n>\t\tAdd n pixels padding (blank tape)\n");
+	printf("\t--autocut\t\t\tEnable auto cutting (of leading tape from last print) (PT-H500/P700/E500)\n");
+	printf("\t--chain\t\t\tEnable chain printing (PT-H500/P700/E500)\n");
 	exit(1);
 }
 
@@ -405,6 +421,10 @@ int parse_args(int argc, char **argv)
 			continue;	/* not done here */
 		} else if (strcmp(&argv[i][1], "-debug") == 0) {
 			debug=true;
+		} else if (strcmp(&argv[i][1], "-chain") == 0) {
+			chain_print=true;
+		} else if (strcmp(&argv[i][1], "-autocut") == 0) {
+			auto_cut=true;
 		} else if (strcmp(&argv[i][1], "-info") == 0) {
 			continue;	/* not done here */
 		} else if (strcmp(&argv[i][1], "-image") == 0) {
@@ -530,6 +550,10 @@ int main(int argc, char *argv[])
 			im = NULL;
 		} else if (strcmp(&argv[i][1], "-debug") == 0) {
 			debug = true;
+		} else if (strcmp(&argv[i][1], "-chain") == 0) {
+			chain_print=true;
+		} else if (strcmp(&argv[i][1], "-autocut") == 0) {
+			auto_cut=true;
 		} else {
 			usage(argv[0]);
 		}

@@ -60,7 +60,7 @@ struct _pt_dev_info ptdevs[] = {
 	{0x04f9, 0x2041, "PT-2730", 128, 180, FLAG_NONE},		/* 180dpi, maximum 128px, max tape width 24mm - reported to work with some quirks */
 	/* Notes about the PT-2730: was reported to need 48px whitespace
 	   within png-images before content is actually printed - can not check this */
-	{0x04f9, 0x205e, "PT-H500", 128, 180, FLAG_RASTER_PACKBITS},
+	{0x04f9, 0x205e, "PT-H500", 128, 180, FLAG_RASTER_PACKBITS|FLAG_P700_INIT},
 	/* Note about the PT-H500: was reported by Eike with the remark that
 	   it might need some trailing padding */
 	{0x04f9, 0x205f, "PT-E500", 128, 180, FLAG_RASTER_PACKBITS},
@@ -206,6 +206,36 @@ int ptouch_rasterstart(ptouch_dev ptdev)
 	return ptouch_send(ptdev, (uint8_t *)cmd, strlen(cmd));
 }
 
+/* enable auto cut */
+int ptouch_auto_cut(ptouch_dev ptdev)
+{
+  /*
+   * 1B 69 4D = Various Mode Command 
+     Value 0x40 = Auto-Cut (automatically cuts "leading tape" - in middle of print)
+  */
+  char cmd_mode[] = "\x1b\x69\x4d\x40";
+  return ptouch_send(ptdev, (uint8_t *)cmd_mode, strlen(cmd_mode));
+}
+
+/* enable chain printing (no feed & cut after printing, next autocut will take care of cutting) */
+int ptouch_chain(ptouch_dev ptdev)
+{
+  /*
+     1B 69 4B = Advanced Mode Command
+     Value:
+     0x01: Draft printing
+     0x02: Not used
+     0x04: Half cut
+     0x08: No chain printing
+     0x10: Special tape (no cutting)
+     0x20: not used
+     0x40: High resolution printing
+     0x80: No buffer cleaning when printing
+  */
+  char cmd_mode[] = "\x1b\x69\x4b\x00";
+  return ptouch_send(ptdev, (uint8_t *)cmd_mode, strlen(cmd_mode));
+}
+
 /* print an empty line */
 int ptouch_lf(ptouch_dev ptdev)
 {
@@ -223,7 +253,7 @@ int ptouch_ff(ptouch_dev ptdev)
 /* print and cut tape */
 int ptouch_eject(ptouch_dev ptdev)
 {
-	char cmd[]="\x1a";
+	char cmd[] = "\x1a";
 	return ptouch_send(ptdev, (uint8_t *)cmd, strlen(cmd));
 }
 

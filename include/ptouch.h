@@ -93,4 +93,6 @@ int ptouch_getstatus(ptouch_dev ptdev);
 int ptouch_getmaxwidth(ptouch_dev ptdev);
 int ptouch_enable_packbits(ptouch_dev ptdev);
 int ptouch_rasterstart(ptouch_dev ptdev);
+int ptouch_chain(ptouch_dev ptdev);
+int ptouch_auto_cut(ptouch_dev ptdev);
 int ptouch_sendraster(ptouch_dev ptdev, uint8_t *data, size_t len);
